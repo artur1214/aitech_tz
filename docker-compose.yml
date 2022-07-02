@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres
+    container_name: tz_postgres
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    ports:
+      - "6543:5432"
+  app:
+    build:
+      context: .
+    volumes:
+      - ./app:/app
+      - ./init.sh:/app/init.sh
+
+    container_name: tz-app
+    restart: unless-stopped
+    command: /bin/bash /app/init.sh
+    env_file:
+      - .env
+    ports:
+      - "5000:5000" # django
+    depends_on:
+      - postgres
+
+volumes:
+  postgres-data:
